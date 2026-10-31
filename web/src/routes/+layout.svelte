@@ -21,6 +21,7 @@ let { children, data }: LayoutProps = $props();
 			<a href="/teams">Teams</a>
 			{#if data.user}
 				<form method="POST" action="/auth/logout"><button type="submit">Sign out</button></form>
+        <a href="https://hcav.hackclub.community/list.pdf">The List</a>
 			{:else}
 				<a href="/auth/login">Sign in</a>
 			{/if}
