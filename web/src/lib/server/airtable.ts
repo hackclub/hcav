@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { required } from './config';
 
-type Fields = Record<string, string | boolean>;
+type Fields = Record<string, string | boolean | number>;
 type RecordRow<T> = { id: string; fields: T };
 export type Person = {
 	id: string;
@@ -22,6 +22,7 @@ export type Team = {
 	open_registration?: boolean;
 	hq_channel_id?: string;
 	hq_channel_name?: string;
+	'Total Points'?: number;
 };
 
 // Airtable allows five requests/second/base. Queue reads as well as writes.

@@ -40,6 +40,7 @@ for (let index = 0; index < 6; index++)
 		name: `directory team ${index}`,
 		captain_id: `ident!directory-${index}`,
 		open_registration: index % 2 === 0,
+		'Total Points': [0, 1, 52, 52, 100][index],
 		link_token: String(index).repeat(43),
 		link_expires: new Date(Date.now() + 86400_000).toISOString()
 	});

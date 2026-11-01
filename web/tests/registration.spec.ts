@@ -207,7 +207,7 @@ test('oidc validates tokens, requires linked slack, keeps public names private a
 	await duplicate.close();
 });
 
-test('directory is gated, shuffled with open teams first, and rechecks closed registration on join', async ({
+test('directory is gated, ranked by points with shared ranks, and rechecks closed registration on join', async ({
 	browser,
 	request
 }) => {
@@ -222,18 +222,28 @@ test('directory is gated, shuffled with open teams first, and rechecks closed re
 	).toBe(303);
 	const guest = await actorContext(browser, 'directory-guest');
 	const page = await guest.newPage();
-	const orders = new Set<string>();
-	for (let index = 0; index < 4; index++) {
-		await page.goto('/teams');
-		const labels = await page.locator('main > ul > li').allTextContents();
-		const firstClosed = labels.findIndex((label) => label.includes('invite-only'));
-		expect(firstClosed).toBeGreaterThan(0);
-		expect(labels.slice(firstClosed).every((label) => !label.includes('open registration'))).toBe(
-			true
-		);
-		orders.add(labels.join('|'));
+	await page.goto('/teams');
+	await expect(page.locator('main > ol > li > strong').first()).toHaveText('directory team 4');
+	expect((await page.locator('main > ol > li > strong').allTextContents()).slice(0, 4)).toEqual([
+		'directory team 4',
+		'directory team 2',
+		'directory team 3',
+		'directory team 1'
+	]);
+	for (const [index, label, rank] of [
+		[0, '· 0 points', 5],
+		[1, '· 1 point', 4],
+		[2, '· 52 points', 2],
+		[3, '· 52 points', 2],
+		[4, '· 100 points', 1],
+		[5, '· 0 points', 5]
+	] as const) {
+		const listing = page.locator('main > ol > li').filter({
+			has: page.getByText(`directory team ${index}`, { exact: true })
+		});
+		await expect(listing.getByText(label, { exact: true })).toBeVisible();
+		await expect(listing).toHaveAttribute('value', String(rank));
 	}
-	expect(orders.size).toBeGreaterThan(1);
 	const roster = page.getByRole('list', { name: 'People on the welcoming committee', exact: true });
 	await expect(roster.getByRole('listitem')).toHaveCount(2);
 	await expect(roster.getByRole('link', { name: 'directory-captain on slack' })).toHaveAttribute(

@@ -1,4 +1,3 @@
-import { randomInt } from 'node:crypto';
 import { fail, isHttpError, redirect } from '@sveltejs/kit';
 import { type Person, rows, type Team } from '#lib/server/airtable';
 import { requireUser } from '#lib/server/auth';
@@ -10,25 +9,31 @@ import type { Actions, PageServerLoad } from './$types';
 export const load: PageServerLoad = async (event) => {
 	const identity = requireUser(event);
 	const [values, people] = await Promise.all([rows<Team>('teams'), rows<Person>('people')]);
-	for (let i = values.length - 1; i > 0; i--) {
-		const j = randomInt(i + 1);
-		[values[i], values[j]] = [values[j], values[i]];
-	}
 	values.sort(
-		(a, b) => Number(Boolean(b.open_registration)) - Number(Boolean(a.open_registration))
+		(a, b) =>
+			(b['Total Points'] ?? 0) - (a['Total Points'] ?? 0) ||
+			a.name.localeCompare(b.name) ||
+			a.id.localeCompare(b.id)
 	);
+	let rank = 0;
 	return {
 		teams: await Promise.all(
-			values.map(async (value) => ({
-				id: value.id,
-				name: value.name,
-				open: value.open_registration === true,
-				members: await Promise.all(
-					people
-						.filter((member) => member.team_id === value.id)
-						.map((member) => profile(member.slack_id))
-				)
-			}))
+			values.map(async (value, index) => {
+				const points = value['Total Points'] ?? 0;
+				if (index === 0 || points !== (values[index - 1]['Total Points'] ?? 0)) rank = index + 1;
+				return {
+					id: value.id,
+					name: value.name,
+					points,
+					rank,
+					open: value.open_registration === true,
+					members: await Promise.all(
+						people
+							.filter((member) => member.team_id === value.id)
+							.map((member) => profile(member.slack_id))
+					)
+				};
+			})
 		),
 		currentTeamId: (await currentTeam(identity))?.id || ''
 	};

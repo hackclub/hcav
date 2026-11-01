@@ -12,7 +12,7 @@ let { data, form }: PageProps = $props();
 >
 
 <h1>Teams</h1>
-<p>Open teams first. Otherwise, in no particular order. Literally.</p>
+<p>Most points first. Equal points share a rank.</p>
 {#if form?.message}
 	<p role="status">{form.message}</p>
 {/if}
@@ -20,10 +20,11 @@ let { data, form }: PageProps = $props();
 	<p>You’re already on a team. <a href="/team">Go to your team</a>.</p>
 {/if}
 {#if data.teams.length}
-	<ul class="pl-6">
+	<ol class="pl-6">
 		{#each data.teams as team}
-			<li class="my-4">
+			<li value={team.rank} class="my-4">
 				<strong>{team.name}</strong>
+				<span>· {team.points} {team.points === 1 ? 'point' : 'points'}</span>
 				{#if team.id === data.currentTeamId}
 					— your team
 				{:else if team.open}
@@ -48,7 +49,7 @@ let { data, form }: PageProps = $props();
 				{/if}
 			</li>
 		{/each}
-	</ul>
+	</ol>
 {:else}
 	<p>No teams yet. An unusually level playing field.</p>
 {/if}

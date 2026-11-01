@@ -62,7 +62,7 @@ sqlite persists signed-command deduplication and channel-addition jobs with retr
 
 - anyone signed in can create a team, join one, or share its link. there is no team-size limit, but each person can belong to only one team.
 - only the captain can rename, remove members, transfer captaincy, rotate/revoke links, change open registration, or select an hq. a captain transfers their role before leaving.
-- `/teams` requires authentication and lists teams in random order with open teams first. the server rechecks open registration at join time rather than trusting the listing or browser. new teams are closed by default; bearer invitations still work for closed teams.
+- `/teams` requires authentication and ranks teams by airtable's numeric `Total Points`, highest first. blank scores count as zero; ties share a competition rank (1, 2, 2, 4), ordered by team name. registration status does not affect ranking. the server rechecks open registration at join time rather than trusting the listing or browser. new teams are closed by default; bearer invitations still work for closed teams.
 - the only invitation mechanism is a bearer `/join/{token}` link, valid for 14 days and revocable by the captain. anyone holding it can use it, so share privately. rotating a link invalidates the previous link without removing existing members.
 - the app also limits general requests, login attempts, joins, and mutations. configure trusted client-ip forwarding correctly before launch; never trust a client-supplied forwarding header directly.
 - the session cookie is http-only, same-site lax, secure in production, revocable at logout, and expires after seven days. provider tokens are not retained.
